@@ -3,46 +3,344 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>لوحة تحكم البوت</title>
+<title>Dis-Bot | لوحة التحكم</title>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; background: linear-gradient(135deg, #0f1117, #1a1d29); color: #fff; margin: 0; min-height: 100vh; padding: 20px; }
-  .container { max-width: 1100px; margin: 0 auto; }
-  h1 { text-align: center; margin: 20px 0 30px; }
-  .card { background: #1a1d29; padding: 20px; border-radius: 12px; margin: 15px 0; border: 1px solid #2a2e3d; }
-  button { background: #5865F2; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.2s; }
-  button:hover { background: #4752C4; }
-  button.sec { background: #2a2e3d; }
-  button.sec:hover { background: #353a4a; }
-  button.danger { background: #ED4245; }
-  button.danger:hover { background: #c73a3d; }
-  input, select, textarea { background: #252938; color: #fff; border: 1px solid #353a4a; padding: 10px; border-radius: 8px; width: 100%; font-size: 14px; font-family: inherit; }
-  textarea { min-height: 80px; resize: vertical; }
-  label { display: block; margin: 12px 0 6px; font-size: 14px; color: #9aa0b0; }
-  .center { text-align: center; padding: 60px 20px; }
-  .guild-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: #252938; border-radius: 10px; cursor: pointer; margin: 10px 0; transition: 0.2s; }
-  .guild-card:hover { background: #303550; }
-  .guild-icon { width: 50px; height: 50px; border-radius: 50%; }
-  .tabs { display: flex; gap: 8px; margin: 20px 0; flex-wrap: wrap; }
-  .tab { padding: 10px 18px; background: #252938; border-radius: 8px; cursor: pointer; border: none; color: #fff; }
-  .tab.active { background: #5865F2; }
-  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
-  .switch input { width: auto; }
-  .toast { position: fixed; bottom: 20px; left: 20px; background: #57F287; color: #000; padding: 12px 20px; border-radius: 8px; font-weight: bold; display: none; }
-  .toast.err { background: #ED4245; color: #fff; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080d;--card:#12141d;--card2:#1a1d29;--border:#22263a;
+  --text:#fff;--muted:#8a90a8;--primary:#5865F2;--primary2:#4752C4;
+  --green:#57F287;--red:#ED4245;--yellow:#FEE75C;--pink:#EB459E;
+}
+html,body{overflow-x:hidden}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:
+    radial-gradient(circle at 15% 20%,rgba(88,101,242,.15) 0%,transparent 45%),
+    radial-gradient(circle at 85% 80%,rgba(235,69,158,.1) 0%,transparent 45%),
+    radial-gradient(circle at 50% 50%,rgba(87,242,135,.05) 0%,transparent 60%);
+}
+/* ============ 3D LOADER ============ */
+#loader{
+  position:fixed;inset:0;background:#07080d;z-index:9999;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  perspective:1000px;transition:opacity .8s ease,visibility .8s;
+}
+#loader.hide{opacity:0;visibility:hidden}
+.loader-scene{
+  width:200px;height:200px;position:relative;transform-style:preserve-3d;
+  animation:spin 4s infinite linear;
+}
+@keyframes spin{
+  0%{transform:rotateX(15deg) rotateY(0)}
+  100%{transform:rotateX(15deg) rotateY(360deg)}
+}
+.cube{
+  position:absolute;width:120px;height:120px;
+  top:40px;left:40px;transform-style:preserve-3d;
+}
+.cube-face{
+  position:absolute;width:120px;height:120px;
+  background:linear-gradient(135deg,rgba(88,101,242,.85),rgba(235,69,158,.85));
+  border:2px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  box-shadow:0 0 30px rgba(88,101,242,.7),inset 0 0 20px rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;
+}
+.cube-face:nth-child(1){transform:translateZ(60px)}
+.cube-face:nth-child(2){transform:rotateY(180deg) translateZ(60px)}
+.cube-face:nth-child(3){transform:rotateY(90deg) translateZ(60px)}
+.cube-face:nth-child(4){transform:rotateY(-90deg) translateZ(60px)}
+.cube-face:nth-child(5){transform:rotateX(90deg) translateZ(60px)}
+.cube-face:nth-child(6){transform:rotateX(-90deg) translateZ(60px)}
+.loader-title{
+  margin-top:60px;font-size:32px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,#5865F2,#EB459E,#57F287);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;background-size:200% 200%;
+  animation:gradient 2s infinite;
+}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.loader-sub{color:var(--muted);margin-top:10px;font-size:14px;letter-spacing:1px}
+.loader-bar{
+  width:260px;height:4px;background:#1a1d29;border-radius:4px;margin-top:30px;overflow:hidden;
+}
+.loader-bar::after{
+  content:'';display:block;height:100%;width:0;
+  background:linear-gradient(90deg,#5865F2,#EB459E);
+  border-radius:4px;animation:load 5s forwards cubic-bezier(.4,0,.2,1);
+}
+@keyframes load{to{width:100%}}
+.particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.particle{
+  position:absolute;width:3px;height:3px;background:#5865F2;border-radius:50%;
+  animation:float 8s infinite;opacity:.6;
+}
+@keyframes float{
+  0%{transform:translateY(100vh) scale(0);opacity:0}
+  10%{opacity:.8}
+  90%{opacity:.8}
+  100%{transform:translateY(-10vh) scale(1.5);opacity:0}
+}
+/* ============ TRANSITIONS ============ */
+.page{display:none;animation:fadeIn .5s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp .6s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+/* ============ LAYOUT ============ */
+.container{max-width:1150px;margin:0 auto;padding:20px}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:rgba(7,8,13,.75);border-bottom:1px solid var(--border);
+  padding:14px 24px;display:flex;justify-content:space-between;align-items:center;
+}
+.topbar-logo{font-weight:900;font-size:20px;
+  background:linear-gradient(135deg,#5865F2,#EB459E);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  display:flex;align-items:center;gap:10px;
+}
+.topbar-user{display:flex;align-items:center;gap:12px;font-size:14px}
+.topbar-user img{width:36px;height:36px;border-radius:50%;border:2px solid var(--primary)}
+/* ============ CARD ============ */
+.card{
+  background:linear-gradient(135deg,rgba(18,20,29,.9),rgba(26,29,41,.9));
+  border:1px solid var(--border);border-radius:16px;padding:22px;margin:15px 0;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+}
+.card:hover{border-color:rgba(88,101,242,.5);transform:translateY(-2px);
+  box-shadow:0 10px 40px rgba(88,101,242,.15)}
+.card-title{font-size:18px;font-weight:800;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+/* ============ BUTTONS ============ */
+button{
+  background:linear-gradient(135deg,#5865F2,#4752C4);color:#fff;border:none;
+  padding:12px 24px;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;
+  transition:all .25s cubic-bezier(.4,0,.2,1);font-family:inherit;
+  box-shadow:0 4px 15px rgba(88,101,242,.3);
+}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(88,101,242,.5)}
+button:active{transform:translateY(0)}
+button.sec{background:var(--card2);color:#fff;box-shadow:none;border:1px solid var(--border)}
+button.sec:hover{background:#252938;box-shadow:0 4px 15px rgba(0,0,0,.3)}
+button.danger{background:linear-gradient(135deg,#ED4245,#c73a3d);box-shadow:0 4px 15px rgba(237,66,69,.3)}
+button.success{background:linear-gradient(135deg,#57F287,#3ba55d);color:#000;box-shadow:0 4px 15px rgba(87,242,135,.3)}
+button.pink{background:linear-gradient(135deg,#EB459E,#c93680);box-shadow:0 4px 15px rgba(235,69,158,.3)}
+button.small{padding:6px 12px;font-size:13px}
+/* ============ INPUTS ============ */
+input,select,textarea{
+  background:var(--card2);color:#fff;border:1px solid var(--border);
+  padding:12px 14px;border-radius:10px;width:100%;font-size:14px;font-family:inherit;
+  transition:all .2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(88,101,242,.15)}
+textarea{min-height:90px;resize:vertical}
+label{display:block;margin:14px 0 6px;font-size:14px;color:var(--muted);font-weight:600}
+/* ============ SWITCH ============ */
+.switch{display:inline-flex;align-items:center;gap:12px;cursor:pointer;padding:8px 0;user-select:none}
+.switch input{display:none}
+.switch-slider{
+  width:48px;height:26px;background:var(--border);border-radius:20px;position:relative;
+  transition:.3s;flex-shrink:0;
+}
+.switch-slider::before{
+  content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;
+  top:3px;right:3px;transition:.3s;
+}
+.switch input:checked + .switch-slider{background:linear-gradient(135deg,#5865F2,#4752C4)}
+.switch input:checked + .switch-slider::before{transform:translateX(-22px)}
+/* ============ LANDING ============ */
+.hero{
+  text-align:center;padding:60px 20px;
+  background:linear-gradient(135deg,rgba(88,101,242,.1),rgba(235,69,158,.05));
+  border-radius:24px;margin:20px 0;border:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(88,101,242,.15),transparent 40%);
+  animation:rotate 20s infinite linear;pointer-events:none;
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:900;margin-bottom:15px;
+  background:linear-gradient(135deg,#5865F2,#EB459E,#57F287);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:200% 200%;animation:gradient 3s infinite;position:relative;
+}
+.hero p{color:var(--muted);font-size:16px;max-width:600px;margin:0 auto 30px;position:relative;line-height:1.7}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin:20px 0}
+.stat-card{
+  background:linear-gradient(135deg,rgba(88,101,242,.1),rgba(235,69,158,.05));
+  border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;
+  transition:all .3s;
+}
+.stat-card:hover{transform:translateY(-5px);border-color:var(--primary)}
+.stat-num{font-size:32px;font-weight:900;
+  background:linear-gradient(135deg,#5865F2,#EB459E);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-label{font-size:13px;color:var(--muted);margin-top:6px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}
+.feature{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.feature:hover{transform:translateY(-5px);border-color:var(--primary);
+  box-shadow:0 15px 40px rgba(88,101,242,.2)}
+.feature::before{
+  content:'';position:absolute;top:0;right:0;width:100%;height:3px;
+  background:linear-gradient(90deg,#5865F2,#EB459E,#57F287);
+  transform:translateX(-100%);transition:.5s;
+}
+.feature:hover::before{transform:translateX(0)}
+.feature-icon{font-size:32px;margin-bottom:10px}
+.feature-title{font-weight:800;margin-bottom:8px;font-size:15px}
+.feature-desc{color:var(--muted);font-size:13px;line-height:1.6}
+.update-item{
+  display:flex;gap:12px;padding:14px;border-radius:10px;background:var(--card2);
+  margin:8px 0;border-right:3px solid var(--primary);transition:.2s;
+}
+.update-item:hover{transform:translateX(-5px);background:#1f2330}
+.update-badge{
+  background:linear-gradient(135deg,#5865F2,#4752C4);color:#fff;
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  height:fit-content;white-space:nowrap;
+}
+.update-text{flex:1;font-size:14px}
+.update-time{font-size:12px;color:var(--muted);margin-top:4px}
+/* ============ GUILD CARDS ============ */
+.guild-card{
+  display:flex;align-items:center;gap:16px;padding:16px;
+  background:var(--card2);border-radius:14px;cursor:pointer;margin:10px 0;
+  transition:all .3s;border:1px solid transparent;
+}
+.guild-card:hover{background:#252938;border-color:var(--primary);transform:translateX(-5px)}
+.guild-icon{width:56px;height:56px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
+.guild-info{flex:1;min-width:0}
+.guild-name{font-weight:800;font-size:16px;margin-bottom:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guild-members{color:var(--muted);font-size:13px}
+.guild-badge{background:var(--primary);color:#fff;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:700}
+/* ============ TABS ============ */
+.tabs{display:flex;gap:8px;margin:20px 0;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.tabs::-webkit-scrollbar{height:6px}
+.tabs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.tab{
+  padding:11px 18px;background:var(--card2);border-radius:10px;cursor:pointer;
+  border:1px solid var(--border);color:var(--muted);white-space:nowrap;
+  font-size:14px;font-weight:700;transition:.25s;
+}
+.tab:hover{color:#fff;border-color:var(--primary)}
+.tab.active{background:linear-gradient(135deg,#5865F2,#4752C4);color:#fff;
+  border-color:transparent;box-shadow:0 4px 15px rgba(88,101,242,.4)}
+/* ============ AUTO-REPLIES ============ */
+.reply-item{
+  display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center;
+  background:var(--card2);padding:10px;border-radius:10px;margin:8px 0;
+}
+.reply-item input{padding:8px 12px;font-size:13px}
+@media(max-width:700px){.reply-item{grid-template-columns:1fr 1fr}}
+/* ============ TOAST ============ */
+.toast{
+  position:fixed;bottom:24px;left:24px;background:var(--green);color:#000;
+  padding:14px 22px;border-radius:12px;font-weight:700;display:none;z-index:1000;
+  box-shadow:0 10px 30px rgba(87,242,135,.4);animation:slideIn .3s ease;
+}
+.toast.err{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(237,66,69,.4)}
+.toast.info{background:var(--primary);color:#fff;box-shadow:0 10px 30px rgba(88,101,242,.4)}
+@keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* ============ MISC ============ */
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.spinner{
+  width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);
+  border-radius:50%;animation:spin2 1s linear infinite;margin:0 auto 15px;
+}
+@keyframes spin2{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-state-icon{font-size:60px;margin-bottom:15px;opacity:.5}
+.gradient-text{background:linear-gradient(135deg,#5865F2,#EB459E);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;
+  font-weight:700;margin-right:6px}
+.badge.green{background:rgba(87,242,135,.15);color:var(--green)}
+.badge.red{background:rgba(237,66,69,.15);color:var(--red)}
+.badge.yellow{background:rgba(254,231,92,.15);color:var(--yellow)}
+.divider{height:1px;background:var(--border);margin:20px 0}
+@media(max-width:600px){
+  .container{padding:12px}
+  .topbar{padding:12px 16px}
+  .card{padding:16px;border-radius:12px}
+  .tabs{gap:6px}
+  .tab{padding:9px 14px;font-size:13px}
+  button{padding:10px 18px;font-size:14px}
+  .hero{padding:40px 15px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>🤖 لوحة تحكم البوت</h1>
-  <div id="app"></div>
+
+<!-- ========== 3D LOADER ========== -->
+<div id="loader">
+  <div class="particles" id="particles"></div>
+  <div class="loader-scene">
+    <div class="cube">
+      <div class="cube-face">🤖</div>
+      <div class="cube-face">⚡</div>
+      <div class="cube-face">🎮</div>
+      <div class="cube-face">💎</div>
+      <div class="cube-face">🚀</div>
+      <div class="cube-face">⭐</div>
+    </div>
+  </div>
+  <div class="loader-title">DIS-BOT</div>
+  <div class="loader-sub">جاري التحميل...</div>
+  <div class="loader-bar"></div>
 </div>
+
+<!-- ========== TOPBAR ========== -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="topbar-logo">🤖 DIS-BOT</div>
+  <div id="topbar-right"></div>
+</div>
+
+<div class="container" id="app"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 const API = 'https://dis-bot-qf91.onrender.com';
 
-const state = { token: null, user: null, guilds: [], currentGuild: null, config: null, channels: [], roles: [] };
+// ============ PARTICLES ============
+(function(){
+  const p = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.style.left = Math.random()*100 + '%';
+    el.style.animationDelay = Math.random()*8 + 's';
+    el.style.animationDuration = (6 + Math.random()*6) + 's';
+    el.style.background = ['#5865F2','#EB459E','#57F287','#FEE75C'][Math.floor(Math.random()*4)];
+    p.appendChild(el);
+  }
+})();
+
+// ============ LOADER ============
+setTimeout(() => {
+  document.getElementById('loader').classList.add('hide');
+  document.getElementById('topbar').style.display = 'flex';
+  init();
+}, 5000);
+
+// ============ STATE ============
+const state = {
+  token: null, user: null, guilds: [], currentGuild: null,
+  config: null, channels: [], categories: [], roles: [], botInfo: null, view: 'landing',
+};
 
 const urlParams = new URLSearchParams(location.search);
 if (urlParams.get('token')) {
@@ -51,137 +349,408 @@ if (urlParams.get('token')) {
 }
 state.token = localStorage.getItem('token');
 
+// ============ API HELPER ============
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + state.token, ...(opts.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(state.token ? { Authorization: 'Bearer ' + state.token } : {}),
+      ...(opts.headers || {}),
+    },
   });
-  if (!res.ok) throw new Error((await res.json()).error || 'خطأ');
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'خطأ');
   return res.json();
 }
 
-function toast(msg, err = false) {
+// ============ TOAST ============
+function toast(msg, type = 'ok') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (err ? ' err' : '');
+  t.className = 'toast' + (type === 'err' ? ' err' : type === 'info' ? ' info' : '');
   t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 2500);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.display = 'none', 3000);
 }
 
+// ============ INIT ============
 async function init() {
-  if (!state.token) return renderLogin();
+  try { state.botInfo = await api('/'); } catch {}
+  renderTopbar();
+  if (!state.token) return renderLanding();
   try {
     state.user = await api('/api/me');
     state.guilds = await api('/api/guilds');
-    renderGuilds();
+    renderTopbar();
+    renderLanding();
   } catch {
     localStorage.removeItem('token');
-    renderLogin();
+    state.token = null;
+    renderLanding();
   }
 }
 
-function renderLogin() {
+// ============ TOPBAR ============
+function renderTopbar() {
+  const el = document.getElementById('topbar-right');
+  if (state.user) {
+    el.innerHTML = `
+      <div class="topbar-user">
+        <span style="color:var(--muted)">${state.user.username}</span>
+        <img src="${state.user.avatar ? `https://cdn.discordapp.com/avatars/${state.user.id}/${state.user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'}">
+        <button class="sec small" onclick="logout()">خروج</button>
+      </div>`;
+  } else {
+    el.innerHTML = `<button onclick="login()">🎮 تسجيل الدخول</button>`;
+  }
+}
+
+function login() { location.href = API + '/auth/login'; }
+function logout() { localStorage.removeItem('token'); state.token = null; state.user = null; location.reload(); }
+
+// ============ ROUTER ============
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); el.classList.add('slide-up'); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============ LANDING ============
+function renderLanding() {
+  state.view = 'landing';
+  const bot = state.botInfo || {};
+  const uptimeH = Math.floor((bot.uptime || 0) / 3600);
+  const uptimeM = Math.floor(((bot.uptime || 0) % 3600) / 60);
+
   document.getElementById('app').innerHTML = `
-    <div class="card center">
-      <h2>سجل دخول بحساب Discord</h2>
-      <p style="color:#9aa0b0">لإدارة البوت في سيرفراتك</p>
-      <a href="${API}/auth/login"><button style="font-size:17px;padding:15px 30px">🎮 تسجيل الدخول</button></a>
+    <div class="page active" id="page-landing">
+      <div class="hero">
+        <h1>🤖 DIS-BOT</h1>
+        <p>بوت ديسكورد متكامل مع لوحة تحكم احترافية — إدارة، ترفيه، مستويات، اقتصاد، تكتات، وجيفاواي في مكان واحد.</p>
+        <div class="hero-btns">
+          ${state.user
+            ? `<button onclick="goServers()">🖥️ سيرفراتي (${state.guilds.length})</button>`
+            : `<button onclick="login()">🎮 تسجيل الدخول</button>`}
+          <button class="sec" onclick="window.open('${API}/api/bot-invite','_blank')">➕ أضف البوت</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num">${bot.status === 'online' ? '🟢' : '🔴'}</div>
+          <div class="stat-label">حالة البوت</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${uptimeH}h ${uptimeM}m</div>
+          <div class="stat-label">مدة التشغيل</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${bot.bot || 'Loading'}</div>
+          <div class="stat-label">اسم البوت</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">16+</div>
+          <div class="stat-label">أمر Slash</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✨ المميزات</div>
+        <div class="feature-grid">
+          ${[
+            ['🛡️','إدارة كاملة','أوامر kick, ban, warn, mute مع سجل تحذيرات'],
+            ['⭐','نظام المستويات','XP لكل رسالة ورولات مكافأة'],
+            ['💰','اقتصاد متكامل','عملة، رصيد يومي، عمل، تحويلات'],
+            ['🎫','نظام التكتات','تذاكر دعم بأزرار إغلاق تلقائية'],
+            ['🎁','الجيفاواي','سحب تلقائي للفائزين'],
+            ['💬','ردود تلقائية','رد على كلمات محددة تلقائياً'],
+            ['🎭','Reaction Roles','رولات بإيموجي'],
+            ['🚫','Auto Moderation','منع سبام، روابط، كلمات ممنوعة'],
+            ['🎨','Embed Builder','إعلانات احترافية بألوان'],
+            ['👋','ترحيب تلقائي','رسائل ترحيب ووداع ورول تلقائي'],
+            ['📊','إحصائيات','متابعة نشاط السيرفر'],
+            ['🎛️','تحكم بالبوت','تغيير الحالة من الداشبورد'],
+          ].map(([i,t,d]) => `
+            <div class="feature">
+              <div class="feature-icon">${i}</div>
+              <div class="feature-title">${t}</div>
+              <div class="feature-desc">${d}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📢 آخر التحديثات</div>
+        ${[
+          ['جديد','نظام التكتات والجيفاواي','قدر تفتح تذاكر دعم وتعمل جيفاواي بأزرار تلقائية','الآن'],
+          ['محدث','نظام المستويات والاقتصاد','XP وفلوس قابلة للتعديل من الداشبورد','قبل قليل'],
+          ['جديد','الردود التلقائية','رد فوري على كلمات محددة مع إمكانية تعديلها','اليوم'],
+          ['جديد','Auto Moderation','حماية تلقائية من السبام والروابط','اليوم'],
+          ['محدث','تصميم الداشبورد','شاشة تحميل 3D وأنيميشن انتقالي','اليوم'],
+        ].map(([b,t,d,time]) => `
+          <div class="update-item">
+            <div class="update-badge">${b}</div>
+            <div class="update-text">
+              <div style="font-weight:700;margin-bottom:4px">${t}</div>
+              <div style="color:var(--muted);font-size:13px">${d}</div>
+              <div class="update-time">⏱️ ${time}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">🚀 جاهز تبدأ؟</div>
+        <p style="color:var(--muted);margin-bottom:15px">سجل دخولك وسوي إعداداتك في ثواني</p>
+        ${state.user ? `<button onclick="goServers()">🖥️ اذهب للسيرفرات</button>` : `<button onclick="login()">🎮 تسجيل الدخول</button>`}
+      </div>
     </div>`;
 }
 
+function goServers() {
+  if (!state.user) return login();
+  renderGuilds();
+}
+
+// ============ GUILDS ============
 function renderGuilds() {
+  state.view = 'guilds';
+  const app = document.getElementById('app');
   const list = state.guilds.map(g => `
     <div class="guild-card" onclick="openGuild('${g.id}')">
       <img class="guild-icon" src="${g.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}">
-      <div style="flex:1">
-        <div style="font-weight:bold">${g.name}</div>
-        <div style="color:#9aa0b0;font-size:13px">${g.members} عضو</div>
+      <div class="guild-info">
+        <div class="guild-name">${g.name}</div>
+        <div class="guild-members">👥 ${g.members} عضو</div>
       </div>
-    </div>`).join('') || '<p style="color:#9aa0b0">ما عندك سيرفرات تديرها</p>';
+      ${g.owner ? '<span class="guild-badge">OWNER</span>' : ''}
+    </div>`).join('');
 
-  document.getElementById('app').innerHTML = `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <b>👋 أهلاً ${state.user.username}</b>
-        <button class="sec" onclick="logout()">خروج</button>
+  app.innerHTML = `
+    <div class="page active" id="page-guilds">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div class="card-title" style="margin:0">🖥️ سيرفراتك (${state.guilds.length})</div>
+          <button class="sec small" onclick="renderLanding()">🏠 الرئيسية</button>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <h3>📋 سيرفراتك (${state.guilds.length})</h3>
-      ${list}
+      <div class="card">
+        ${state.guilds.length
+          ? list
+          : `<div class="empty-state">
+              <div class="empty-state-icon">😕</div>
+              <h3 style="margin-bottom:10px">ما عندك سيرفرات فيها البوت</h3>
+              <p style="margin-bottom:20px">أضف البوت لسيرفرك أو تأكد إن عندك صلاحيات Admin</p>
+              <button onclick="window.open('${API}/api/bot-invite','_blank')">➕ أضف البوت</button>
+             </div>`}
+      </div>
     </div>`;
 }
 
+// ============ GUILD VIEW ============
 async function openGuild(id) {
   try {
     const data = await api('/api/guild/' + id);
     state.currentGuild = state.guilds.find(g => g.id === id);
     state.config = data.config;
     state.channels = data.channels;
+    state.categories = data.categories || [];
     state.roles = data.roles;
     renderGuild();
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
 function renderGuild() {
+  state.view = 'guild';
+  const c = state.config;
+
   document.getElementById('app').innerHTML = `
-    <div class="card">
-      <button class="sec" onclick="renderGuilds()">⬅️ رجوع</button>
-      <h2 style="margin:15px 0">${state.currentGuild.name}</h2>
-    </div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('welcome',this)">👋 الترحيب</button>
-      <button class="tab" onclick="switchTab('goodbye',this)">👋 الوداع</button>
-      <button class="tab" onclick="switchTab('logs',this)">📋 اللوقات</button>
-      <button class="tab" onclick="switchTab('announce',this)">📢 إعلان</button>
-      <button class="tab" onclick="switchTab('warnings',this)">⚠️ التحذيرات</button>
-      <button class="tab" onclick="switchTab('commands',this)">⚙️ الأوامر</button>
-    </div>
-    <div id="tab-content"></div>`;
+    <div class="page active" id="page-guild">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <img src="${state.currentGuild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width:52px;height:52px;border-radius:50%;border:2px solid var(--primary)">
+            <div>
+              <div style="font-weight:900;font-size:18px">${state.currentGuild.name}</div>
+              <div style="color:var(--muted);font-size:13px">👥 ${state.currentGuild.members} عضو</div>
+            </div>
+          </div>
+          <button class="sec small" onclick="renderGuilds()">⬅️ رجوع</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="welcome" onclick="switchTab('welcome',this)">👋 الترحيب</div>
+        <div class="tab" data-tab="goodbye" onclick="switchTab('goodbye',this)">👋 الوداع</div>
+        <div class="tab" data-tab="replies" onclick="switchTab('replies',this)">💬 ردود تلقائية</div>
+        <div class="tab" data-tab="levels" onclick="switchTab('levels',this)">⭐ مستويات</div>
+        <div class="tab" data-tab="economy" onclick="switchTab('economy',this)">💰 اقتصاد</div>
+        <div class="tab" data-tab="tickets" onclick="switchTab('tickets',this)">🎫 تكتات</div>
+        <div class="tab" data-tab="giveaways" onclick="switchTab('giveaways',this)">🎁 جيفاواي</div>
+        <div class="tab" data-tab="reactions" onclick="switchTab('reactions',this)">🎭 Reaction Roles</div>
+        <div class="tab" data-tab="automod" onclick="switchTab('automod',this)">🚫 Auto Mod</div>
+        <div class="tab" data-tab="bot" onclick="switchTab('bot',this)">🎛️ تحكم البوت</div>
+        <div class="tab" data-tab="announce" onclick="switchTab('announce',this)">📢 إعلان</div>
+        <div class="tab" data-tab="warnings" onclick="switchTab('warnings',this)">⚠️ تحذيرات</div>
+        <div class="tab" data-tab="commands" onclick="switchTab('commands',this)">⚙️ الأوامر</div>
+        <div class="tab" data-tab="leaderboard" onclick="switchTab('leaderboard',this)">🏆 المتصدرين</div>
+      </div>
+
+      <div id="tab-content"></div>
+    </div>`;
   switchTab('welcome');
+}
+
+function chOpts(sel) {
+  return `<option value="">بدون</option>` +
+    state.channels.map(ch => `<option value="${ch.id}" ${sel === ch.id ? 'selected' : ''}>#${ch.name}</option>`).join('');
+}
+function catOpts(sel) {
+  return `<option value="">بدون</option>` +
+    state.categories.map(c => `<option value="${c.id}" ${sel === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+}
+function roleOpts(sel) {
+  return `<option value="">بدون</option>` +
+    state.roles.map(r => `<option value="${r.id}" ${sel === r.id ? 'selected' : ''}>${r.name}</option>`).join('');
 }
 
 function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
-
+  else document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add('active');
   const c = state.config;
-  const chOpts = (sel) => `<option value="">بدون</option>` + state.channels.map(ch =>
-    `<option value="${ch.id}" ${sel === ch.id ? 'selected' : ''}>#${ch.name}</option>`).join('');
-  const roleOpts = (sel) => `<option value="">بدون</option>` + state.roles.map(r =>
-    `<option value="${r.id}" ${sel === r.id ? 'selected' : ''}>${r.name}</option>`).join('');
-
   let html = '';
+
   if (name === 'welcome') html = `
     <div class="card">
-      <label class="switch"><input type="checkbox" id="welcomeEnabled" ${c.welcomeEnabled?'checked':''}> تفعيل الترحيب</label>
+      <div class="card-title">👋 إعدادات الترحيب</div>
+      <label class="switch"><input type="checkbox" id="welcomeEnabled" ${c.welcomeEnabled?'checked':''}><span class="switch-slider"></span> تفعيل الترحيب</label>
       <label>قناة الترحيب</label>
       <select id="welcomeChannel">${chOpts(c.welcomeChannel)}</select>
       <label>رسالة الترحيب</label>
-      <textarea id="welcomeMessage">${c.welcomeMessage}</textarea>
-      <p style="color:#9aa0b0;font-size:13px">متغيرات: <code>{user}</code> <code>{server}</code> <code>{count}</code></p>
+      <textarea id="welcomeMessage">${c.welcomeMessage||''}</textarea>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px">متغيرات: <code>{user}</code> <code>{server}</code> <code>{count}</code></p>
       <label>رول تلقائي للأعضاء الجدد</label>
       <select id="autoRole">${roleOpts(c.autoRole)}</select>
-      <br><br><button onclick="save()">💾 حفظ</button>
+      <br><br><button onclick="save(['welcomeEnabled','welcomeChannel','welcomeMessage','autoRole'])">💾 حفظ</button>
     </div>`;
+
   else if (name === 'goodbye') html = `
     <div class="card">
-      <label class="switch"><input type="checkbox" id="goodbyeEnabled" ${c.goodbyeEnabled?'checked':''}> تفعيل الوداع</label>
+      <div class="card-title">👋 إعدادات الوداع</div>
+      <label class="switch"><input type="checkbox" id="goodbyeEnabled" ${c.goodbyeEnabled?'checked':''}><span class="switch-slider"></span> تفعيل الوداع</label>
       <label>قناة الوداع</label>
       <select id="goodbyeChannel">${chOpts(c.goodbyeChannel)}</select>
       <label>رسالة الوداع</label>
-      <textarea id="goodbyeMessage">${c.goodbyeMessage}</textarea>
-      <p style="color:#9aa0b0;font-size:13px">متغيرات: <code>{user}</code> <code>{server}</code></p>
-      <br><button onclick="save()">💾 حفظ</button>
+      <textarea id="goodbyeMessage">${c.goodbyeMessage||''}</textarea>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px">متغيرات: <code>{user}</code> <code>{server}</code></p>
+      <br><button onclick="save(['goodbyeEnabled','goodbyeChannel','goodbyeMessage'])">💾 حفظ</button>
     </div>`;
-  else if (name === 'logs') html = `
+
+  else if (name === 'replies') {
+    html = `
+      <div class="card">
+        <div class="card-title">💬 الردود التلقائية</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:15px">لما حد يكتب الكلمة، البوت يرد تلقائياً</p>
+        <div id="repliesList"></div>
+        <br>
+        <button class="success small" onclick="addReply()">➕ إضافة رد</button>
+        <button onclick="saveReplies()">💾 حفظ الكل</button>
+      </div>`;
+    setTimeout(renderReplies, 30);
+  }
+
+  else if (name === 'levels') html = `
     <div class="card">
-      <label>قناة اللوقات</label>
-      <select id="logChannel">${chOpts(c.logChannel)}</select>
-      <br><br><button onclick="save()">💾 حفظ</button>
+      <div class="card-title">⭐ نظام المستويات</div>
+      <label class="switch"><input type="checkbox" id="levelsEnabled" ${c.levelsEnabled?'checked':''}><span class="switch-slider"></span> تفعيل النظام</label>
+      <label>قناة إعلان المستويات</label>
+      <select id="levelChannel">${chOpts(c.levelChannel)}</select>
+      <label>XP لكل رسالة</label>
+      <input type="number" id="xpPerMessage" value="${c.xpPerMessage||15}" min="1" max="100">
+      <br><br><button onclick="save(['levelsEnabled','levelChannel','xpPerMessage'])">💾 حفظ</button>
     </div>`;
+
+  else if (name === 'economy') html = `
+    <div class="card">
+      <div class="card-title">💰 نظام الاقتصاد</div>
+      <label class="switch"><input type="checkbox" id="economyEnabled" ${c.economyEnabled?'checked':''}><span class="switch-slider"></span> تفعيل الاقتصاد</label>
+      <label>رمز العملة</label>
+      <input type="text" id="currency" value="${c.currency||'🪙'}" maxlength="8">
+      <label>المكافأة اليومية</label>
+      <input type="number" id="dailyAmount" value="${c.dailyAmount||100}" min="1">
+      <br><br><button onclick="save(['economyEnabled','currency','dailyAmount'])">💾 حفظ</button>
+    </div>`;
+
+  else if (name === 'tickets') html = `
+    <div class="card">
+      <div class="card-title">🎫 نظام التكتات</div>
+      <label class="switch"><input type="checkbox" id="ticketsEnabled" ${c.ticketsEnabled?'checked':''}><span class="switch-slider"></span> تفعيل التكتات</label>
+      <label>كاتيجوري التكتات</label>
+      <select id="ticketCategory">${catOpts(c.ticketCategory)}</select>
+      <label>قناة اللوقات للتكتات</label>
+      <select id="ticketLogChannel">${chOpts(c.ticketLogChannel)}</select>
+      <label>رول الدعم</label>
+      <select id="ticketSupportRole">${roleOpts(c.ticketSupportRole)}</select>
+      <label>رسالة التكت</label>
+      <textarea id="ticketMessage">${c.ticketMessage||''}</textarea>
+      <br><button onclick="save(['ticketsEnabled','ticketCategory','ticketLogChannel','ticketSupportRole','ticketMessage'])">💾 حفظ</button>
+    </div>`;
+
+  else if (name === 'giveaways') {
+    html = `
+      <div class="card">
+        <div class="card-title">🎁 الجيفاواي</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:10px">لعرض الجيفاويات استخدم الأمر <code>/giveaway start</code> في Discord</p>
+        <div id="giveawaysList">جاري التحميل...</div>
+      </div>`;
+    setTimeout(loadGiveaways, 30);
+  }
+
+  else if (name === 'reactions') html = `
+    <div class="card">
+      <div class="card-title">🎭 Reaction Roles</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:15px">لما عضو يضغط إيموجي، ياخذ رول تلقائياً</p>
+      <label>القناة</label>
+      <select id="rrChannel">${chOpts()}</select>
+      <label>ID الرسالة</label>
+      <input id="rrMessage" placeholder="مثال: 1234567890123456789">
+      <label>الإيموجي</label>
+      <input id="rrEmoji" placeholder="مثال: ✅" maxlength="4">
+      <label>الرول</label>
+      <select id="rrRole">${roleOpts()}</select>
+      <br><br><button onclick="createReactionRole()">➕ إنشاء</button>
+    </div>`;
+
+  else if (name === 'automod') html = `
+    <div class="card">
+      <div class="card-title">🚫 Auto Moderation</div>
+      <label class="switch"><input type="checkbox" id="antiSpam" ${c.antiSpam?'checked':''}><span class="switch-slider"></span> منع السبام</label>
+      <label class="switch"><input type="checkbox" id="antiLink" ${c.antiLink?'checked':''}><span class="switch-slider"></span> منع الروابط</label>
+      <label class="switch"><input type="checkbox" id="antiCaps" ${c.antiCaps?'checked':''}><span class="switch-slider"></span> منع الأحرف الكبيرة</label>
+      <label>كلمات ممنوعة (افصل بينها بفاصلة)</label>
+      <textarea id="badWords">${(c.badWords||[]).join(', ')}</textarea>
+      <br><button onclick="saveAutoMod()">💾 حفظ</button>
+    </div>`;
+
+  else if (name === 'bot') html = `
+    <div class="card">
+      <div class="card-title">🎛️ تحكم بالبوت</div>
+      <label>حالة البوت (النص)</label>
+      <input id="botStatus" value="${c.botStatus||'the dashboard 👀'}">
+      <label>نوع الحالة</label>
+      <select id="botStatusType">
+        <option value="Watching" ${c.botStatusType==='Watching'?'selected':''}>👀 Watching</option>
+        <option value="Playing" ${c.botStatusType==='Playing'?'selected':''}>🎮 Playing</option>
+        <option value="Listening" ${c.botStatusType==='Listening'?'selected':''}>🎧 Listening</option>
+        <option value="Competing" ${c.botStatusType==='Competing'?'selected':''}>🏆 Competing</option>
+      </select>
+      <br><br><button onclick="changeBotStatus()">🚀 تطبيق</button>
+    </div>`;
+
   else if (name === 'announce') html = `
     <div class="card">
+      <div class="card-title">📢 إرسال إعلان</div>
       <label>القناة</label>
       <select id="annCh">${chOpts()}</select>
       <label>العنوان</label>
@@ -192,33 +761,40 @@ function switchTab(name, btn) {
       <input id="annColor" type="color" value="#5865F2" style="height:50px">
       <br><br><button onclick="sendAnnounce()">📢 إرسال</button>
     </div>`;
-  else if (name === 'warnings') { html = `
-    <div class="card">
-      <h3>⚠️ سجل التحذيرات</h3>
-      <div id="warnsBox">جاري التحميل...</div>
-    </div>`; setTimeout(loadWarnings, 50); }
+
+  else if (name === 'warnings') {
+    html = `<div class="card"><div class="card-title">⚠️ سجل التحذيرات</div><div id="warnsBox">جاري التحميل...</div></div>`;
+    setTimeout(loadWarnings, 30);
+  }
+
   else if (name === 'commands') {
-    const all = ['ping','serverinfo','userinfo','avatar','kick','ban','unban','timeout','warn','warnings','clear','8ball','dice','coinflip','poll','say'];
+    const all = ['ping','help','serverinfo','userinfo','avatar','kick','ban','unban','timeout','warn','warnings','clear','lock','unlock','slowmode','role','8ball','dice','coinflip','trivia','rps','poll','say','qrcode','balance','daily','work','pay','leaderboard','rank','ticket','giveaway'];
     html = `
       <div class="card">
-        <h3>⚙️ تفعيل/تعطيل الأوامر</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        <div class="card-title">⚙️ تفعيل/تعطيل الأوامر</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
           ${all.map(cmd => `
             <label class="switch">
               <input type="checkbox" data-cmd="${cmd}" ${!c.disabledCommands?.includes(cmd)?'checked':''}>
-              /${cmd}
+              <span class="switch-slider"></span> /${cmd}
             </label>`).join('')}
         </div>
         <br><button onclick="saveCommands()">💾 حفظ</button>
       </div>`;
   }
+
+  else if (name === 'leaderboard') {
+    html = `<div class="card"><div class="card-title">🏆 المتصدرين</div><div id="lbBox">جاري التحميل...</div></div>`;
+    setTimeout(loadLeaderboard, 30);
+  }
+
   document.getElementById('tab-content').innerHTML = html;
 }
 
-async function save() {
+// ============ SAVE ============
+async function save(fields) {
   const updates = {};
-  const ids = ['welcomeEnabled','welcomeChannel','welcomeMessage','goodbyeEnabled','goodbyeChannel','goodbyeMessage','logChannel','autoRole'];
-  for (const id of ids) {
+  for (const id of fields) {
     const el = document.getElementById(id);
     if (!el) continue;
     updates[id] = el.type === 'checkbox' ? el.checked : (el.value || null);
@@ -226,9 +802,56 @@ async function save() {
   try {
     state.config = await api('/api/guild/' + state.currentGuild.id, { method: 'PATCH', body: JSON.stringify(updates) });
     toast('✅ تم الحفظ');
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
+// ============ AUTO-REPLIES ============
+function renderReplies() {
+  const list = document.getElementById('repliesList');
+  const arr = state.config.autoReplies || [];
+  if (!arr.length) return list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">ما في ردود بعد</p>';
+  list.innerHTML = arr.map((r, i) => `
+    <div class="reply-item">
+      <input value="${r.trigger||''}" placeholder="الكلمة" data-i="${i}" data-f="trigger">
+      <input value="${r.response||''}" placeholder="الرد" data-i="${i}" data-f="response">
+      <label class="switch" style="margin:0">
+        <input type="checkbox" ${r.exact?'checked':''} data-i="${i}" data-f="exact">
+        <span class="switch-slider"></span>
+      </label>
+      <button class="danger small" onclick="removeReply(${i})">🗑️</button>
+    </div>`).join('');
+}
+
+function addReply() {
+  if (!state.config.autoReplies) state.config.autoReplies = [];
+  state.config.autoReplies.push({ trigger: '', response: '', exact: false });
+  renderReplies();
+}
+
+function removeReply(i) {
+  state.config.autoReplies.splice(i, 1);
+  renderReplies();
+}
+
+async function saveReplies() {
+  const items = document.querySelectorAll('#repliesList .reply-item');
+  const arr = [];
+  items.forEach(el => {
+    const inputs = el.querySelectorAll('[data-f]');
+    const o = {};
+    inputs.forEach(inp => {
+      const f = inp.dataset.f;
+      o[f] = f === 'exact' ? inp.checked : inp.value;
+    });
+    if (o.trigger && o.response) arr.push(o);
+  });
+  try {
+    state.config = await api('/api/guild/' + state.currentGuild.id, { method: 'PATCH', body: JSON.stringify({ autoReplies: arr }) });
+    toast('✅ تم حفظ ' + arr.length + ' رد');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ============ COMMANDS ============
 async function saveCommands() {
   const disabled = [];
   document.querySelectorAll('#tab-content input[data-cmd]').forEach(inp => {
@@ -237,9 +860,36 @@ async function saveCommands() {
   try {
     state.config = await api('/api/guild/' + state.currentGuild.id, { method: 'PATCH', body: JSON.stringify({ disabledCommands: disabled }) });
     toast('✅ تم الحفظ');
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
+// ============ AUTOMOD ============
+async function saveAutoMod() {
+  const bw = document.getElementById('badWords').value
+    .split(',').map(s => s.trim()).filter(Boolean);
+  try {
+    state.config = await api('/api/guild/' + state.currentGuild.id, { method: 'PATCH', body: JSON.stringify({
+      antiSpam: document.getElementById('antiSpam').checked,
+      antiLink: document.getElementById('antiLink').checked,
+      antiCaps: document.getElementById('antiCaps').checked,
+      badWords: bw,
+    }) });
+    toast('✅ تم الحفظ');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ============ BOT STATUS ============
+async function changeBotStatus() {
+  try {
+    await api('/api/guild/' + state.currentGuild.id + '/status', { method: 'POST', body: JSON.stringify({
+      text: document.getElementById('botStatus').value,
+      type: document.getElementById('botStatusType').value,
+    }) });
+    toast('✅ تم تغيير الحالة');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ============ ANNOUNCE ============
 async function sendAnnounce() {
   const body = {
     channelId: document.getElementById('annCh').value,
@@ -250,23 +900,25 @@ async function sendAnnounce() {
   try {
     await api('/api/guild/' + state.currentGuild.id + '/announce', { method: 'POST', body: JSON.stringify(body) });
     toast('✅ تم الإرسال');
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
+// ============ WARNINGS ============
 async function loadWarnings() {
   try {
     const warns = await api('/api/guild/' + state.currentGuild.id + '/warnings');
     const box = document.getElementById('warnsBox');
-    if (!warns.length) return box.innerHTML = '<p style="color:#9aa0b0">ما في تحذيرات</p>';
+    if (!warns.length) return box.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">ما في تحذيرات</p>';
     box.innerHTML = warns.map(w => `
-      <div style="background:#252938;padding:12px;border-radius:8px;margin:8px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="background:var(--card2);padding:12px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <div>
-          <div><b>@${w.userId}</b> — ${w.reason}</div>
-          <div style="color:#9aa0b0;font-size:13px">بواسطة @${w.moderatorId} — ${new Date(w.createdAt).toLocaleString('ar')}</div>
+          <div style="font-weight:700"><span class="badge yellow">⚠️</span>@${w.userId}</div>
+          <div style="color:var(--muted);font-size:13px;margin-top:4px">${w.reason}</div>
+          <div style="color:var(--muted);font-size:12px;margin-top:2px">بواسطة @${w.moderatorId} — ${new Date(w.createdAt).toLocaleString('ar')}</div>
         </div>
-        <button class="danger" onclick="delWarn('${w._id}')">🗑️</button>
+        <button class="danger small" onclick="delWarn('${w._id}')">🗑️</button>
       </div>`).join('');
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
 async function delWarn(id) {
@@ -274,11 +926,65 @@ async function delWarn(id) {
     await api('/api/guild/' + state.currentGuild.id + '/warnings/' + id, { method: 'DELETE' });
     toast('✅ تم الحذف');
     loadWarnings();
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { toast(e.message, 'err'); }
 }
 
-function logout() { localStorage.removeItem('token'); location.reload(); }
+// ============ LEADERBOARD ============
+async function loadLeaderboard() {
+  try {
+    const lb = await api('/api/guild/' + state.currentGuild.id + '/leaderboard');
+    const box = document.getElementById('lbBox');
+    if (!lb.length) return box.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">ما في بيانات</p>';
+    box.innerHTML = lb.map((u, i) => {
+      const medal = ['🥇','🥈','🥉'][i] || `#${i+1}`;
+      return `
+        <div style="background:var(--card2);padding:12px;border-radius:10px;margin:8px 0;display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px;width:40px;text-align:center">${medal}</div>
+          <div style="flex:1">
+            <div style="font-weight:700">${u.username}</div>
+            <div style="color:var(--muted);font-size:12px">المستوى: ${u.level} • الرسائل: ${u.messages}</div>
+          </div>
+          <div style="font-weight:900;color:var(--yellow)">${u.coins} 🪙</div>
+        </div>`;
+    }).join('');
+  } catch (e) { toast(e.message, 'err'); }
+}
 
+// ============ GIVEAWAYS ============
+async function loadGiveaways() {
+  try {
+    const gs = await api('/api/guild/' + state.currentGuild.id + '/giveaways');
+    const box = document.getElementById('giveawaysList');
+    if (!gs.length) return box.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">ما في جيفاويات</p>';
+    box.innerHTML = gs.map(g => `
+      <div style="background:var(--card2);padding:12px;border-radius:10px;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="font-weight:700">🎁 ${g.prize}</div>
+          <span class="badge ${g.ended ? 'red' : 'green'}">${g.ended ? 'انتهى' : 'نشط'}</span>
+        </div>
+        <div style="color:var(--muted);font-size:12px;margin-top:6px">
+          فائزون: ${g.winners} • مشاركون: ${g.participants?.length || 0}
+        </div>
+      </div>`).join('');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ============ REACTION ROLE ============
+async function createReactionRole() {
+  const body = {
+    channelId: document.getElementById('rrChannel').value,
+    messageId: document.getElementById('rrMessage').value.trim(),
+    emoji: document.getElementById('rrEmoji').value.trim(),
+    roleId: document.getElementById('rrRole').value,
+  };
+  if (!body.channelId || !body.messageId || !body.emoji || !body.roleId) return toast('املأ كل الحقول', 'err');
+  try {
+    await api('/api/guild/' + state.currentGuild.id + '/reactionrole', { method: 'POST', body: JSON.stringify(body) });
+    toast('✅ تم الإنشاء');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ============ INIT ============
 init();
 </script>
 </body>
